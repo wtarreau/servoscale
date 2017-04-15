@@ -14,10 +14,10 @@
 #define MARGIN 40
 
 // detect full throttle in microseconds
-#define FWDFULL  300
+#define FWDFULL  400
 
-// 20 * 20ms = 400ms max burst duration and cancellation delay
-#define MAXBURST 20
+// 15 * 20ms = 300ms max burst duration and cancellation delay
+#define MAXBURST 15
 
 /*
  * state transitions :
