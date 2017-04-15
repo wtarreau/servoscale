@@ -21,6 +21,10 @@
 
 /*
  * state transitions :
+ *
+ *   CTR = auto centering at boot
+ *   CTR ====(dur=1s)=======> INI
+ *
  *   INI = initial state
  *   INI ====(pulse < 0)====> REV
  *   INI ====(pulse > 0)====> FWD
@@ -45,16 +49,18 @@
  *
  */
 enum {
+  CTR,
   INI,
   REV,
   FWD,
   STP,
   BRK,
-} state = INI;
+} state = CTR;
 
 // duration in pulses in the current state (used to allow some burst periods)
 int duration = 0;
 int nobst = 0;
+int offset = 0;
 
 void setup()
 {
@@ -70,13 +76,34 @@ void loop()
   // we read such a pulse every 20 ms
   len = pulseIn(PIN_IN, HIGH); // time in microseconds
 
-  // calibration: turn on the LED for non-rest positions
-  digitalWrite(LED, (len > 0 && len <= 1500-MARGIN || len >= 1500+MARGIN && len < 3000) ? HIGH : LOW);
-
   // center is at 1500 microseconds.
   len -= 1500;
+  if (state != CTR)
+    len += offset;
+
+  // calibration: turn on the LED for non-rest positions
+  digitalWrite(LED, (state == CTR || len >= -1500 && len <= -MARGIN || len >= MARGIN && len <= 1500) ? HIGH : LOW);
 
   switch (state) {
+    case CTR :
+      if (len < -1500 || len > 1500) {
+        /* wait for a valid signal to start measuring */
+        duration--;
+        break;
+      }
+      if (duration >= 10) {
+        /* cumulate imprecision over the last 10 samples */
+        if (len < 0)
+          offset -= len;
+        else
+          offset += len;
+      }
+      if (duration >= 20) {
+          offset /= 10;
+          state = INI;
+          duration = 0;
+      }
+      break;
     case INI :
       if (len >= MARGIN) {
         state = FWD;
