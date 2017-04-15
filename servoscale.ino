@@ -120,8 +120,10 @@ void loop()
         duration = 0;
       }
       else if (len > -MARGIN && len < MARGIN) {
-        state = STP;
-        duration = 0;
+        if (duration >= 4) { // avoid jitter during throttle manipulation
+          state = STP;
+          duration = 0;
+        }
       }
       break;
     case STP :
@@ -141,8 +143,10 @@ void loop()
         duration = 0;
       }
       else if (len > -MARGIN && len < MARGIN) {
-        state = INI;
-        duration = 0;
+        if (duration >= 4) { // avoid jitter during throttle manipulation
+          state = INI;
+          duration = 0;
+        }
       }
       break;
   }
