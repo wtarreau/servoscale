@@ -61,6 +61,7 @@ enum {
 int duration = 0;
 int nobst = 0;
 int offset = 0;
+int led = HIGH;
 
 void setup()
 {
@@ -74,15 +75,14 @@ void loop()
   int len;
 
   // we read such a pulse every 20 ms
+  digitalWrite(LED, led);
   len = pulseIn(PIN_IN, HIGH); // time in microseconds
+  led = LOW; digitalWrite(LED, LOW);
 
   // center is at 1500 microseconds.
   len -= 1500;
   if (state != CTR)
     len += offset;
-
-  // calibration: turn on the LED for non-rest positions
-  digitalWrite(LED, (state == CTR || len >= -1500 && len <= -MARGIN || len >= MARGIN && len <= 1500) ? HIGH : LOW);
 
   switch (state) {
     case CTR :
@@ -164,20 +164,27 @@ void loop()
           nobst = 2 * MAXBURST;
 
       // limit forward speed unless we're exceptionally tolerating a burst
-      if (len < FWDFULL || nobst >= MAXBURST)
+      if (len < FWDFULL || nobst >= MAXBURST) {
         len = len * 2 / 5;
+        led = HIGH; // show we're limited
+      }
       break;
 
     case REV :
       len = len * 2 / 3; // backward scaling
-
+      led = HIGH; // show we're limited
       if (--nobst < 0)
         nobst = 0;
+      break;
+
+    case CTR :
+      led = HIGH; // show we're syncing.
       break;
 
     default:
       if (--nobst < 0)
         nobst = 0;
+      led = LOW;
       break;
   }
 
