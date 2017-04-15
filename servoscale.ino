@@ -86,7 +86,7 @@ void loop()
 
   switch (state) {
     case CTR :
-      if (len < -1500 || len > 1500) {
+      if (len < -500 || len > 500) {
         /* wait for a valid signal to start measuring */
         duration--;
         break;
