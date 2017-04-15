@@ -169,7 +169,7 @@ void loop()
       break;
 
     case REV :
-      len = len * 2 / 4; // backward scaling
+      len = len * 2 / 3; // backward scaling
 
       if (--nobst < 0)
         nobst = 0;
