@@ -5,6 +5,19 @@
  * pulse on PB3 (pin2). Useful to reduce the amplitude of incoming commands
  * for training, without removing ability to brake or to drift a little
  * bit.
+ * PB2 can be connected to 3 leds to power the REAR light and the brakes
+ * like this by setting it to input, outlow, outhigh :
+ *                  + VCC                  //
+ *                  |                      // or safer for the leds, place
+ *         100      V D1 (white) REAR      // two 100 ohms resistors between
+ *  PB2 --vvvvv-----+                      // D1 and D2, and connect PB2 in
+ *                  |                      // the middle. It will ensure that
+ *                  V D2 (red)  BRAKE      // voltage peaks don't destroy the
+ *                  T                      // leds.
+ *                  V D3 (red)             //
+ *                  T
+ *                 /// GND
+ *
  * A second function is implemented : PB0 (pin 5) can be used to power front
  * lights when connected to the 3rd channel. It only discriminates the pulse
  * width.
@@ -121,9 +134,9 @@ int main(void)
 	 * PB4   3    in  (pulse-in)
 	 * PB0   5   out  (front light)
 	 * PB1   6   out  (debug)
-	 * PB2   7   out  (brake/rear)
+	 * PB2   7   i/o  (brake/rear)
 	 */
-	DDRB = 1<<DDB3 | 1<<DDB2 | 1<<DDB1 | 1<<DDB0;
+	DDRB = 1<<DDB3 | 1<<DDB1 | 1<<DDB0;
 
 #ifdef DEBUG_BIT_PASSTHROUGH
 	while (1) {
@@ -233,6 +246,23 @@ int main(void)
 				}
 			}
 			break;
+		}
+
+		if (state == BRK) {
+			/* PB2 as output to VCC => red leds */
+			DDRB |= 1 << DDB2;
+			PORTB |= 1 << PB2;
+		}
+		else if (state == REV) {
+			/* PB2 as output to GND => white led */
+			DDRB |= 1 << DDB2;
+			PORTB &= ~(1 << PB2);
+		}
+		else {
+			/* configure as input, the pull-up is too weak to light
+			 * two red lights in series.
+			 */
+			DDRB &= ~(1<<DDB2);
 		}
 
 		// scale pulse width depending on direction. It may also be useful
