@@ -1,6 +1,9 @@
 MCU    := attiny85
 F_CPU  := 8000000
 FUSE   := -U lfuse:w:0xc1:m -U hfuse:w:0xdd:m -U efuse:w:0xfe:m
+#MCU   := attiny13
+#F_CPU := 9600000
+#FUSE  := -U lfuse:w:0x7a:m -U hfuse:w:0xff:m
 TARGET := servoscale
 PROG   := buspirate
 PORT   := /dev/ttyUSB0
