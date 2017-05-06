@@ -140,6 +140,14 @@ int main(void)
 	 */
 	DDRB = 1<<DDB3 | 1<<DDB1 | 1<<DDB0;
 
+#ifdef DEBUG_CHECK_FREQ
+	/* emits F/10 on B0, F/20 on B1, F/40 on B2, F/80 on B3, F/160 on B4 */
+	DDRB = 1<<DDB3 | 1<<DDB3 | 1<<DDB2 | 1<<DDB1 | 1<<DDB0;
+	while (1) {
+		PORTB++;
+	}
+#endif
+
 #ifdef DEBUG_BIT_PASSTHROUGH
 	while (1) {
 		if (PINB & (1 << PB2))
