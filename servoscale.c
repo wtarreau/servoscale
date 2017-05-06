@@ -5,6 +5,9 @@
  * pulse on PB3 (pin2). Useful to reduce the amplitude of incoming commands
  * for training, without removing ability to brake or to drift a little
  * bit.
+ * A second function is implemented : PB0 (pin 5) can be used to power front
+ * lights when connected to the 3rd channel. It only discriminates the pulse
+ * width.
  */
 
 #ifndef F_CPU
@@ -153,6 +156,12 @@ int main(void)
 		len = pulse_width();
 		led = 0;
 		show_led();
+
+		/* front light on PB0 */
+		if (len < 1400)
+			PORTB &= ~(1 << PB0);
+		else
+			PORTB |= (1 << PB0);
 
 		// center is at 1500 microseconds.
 		len -= 1500;
