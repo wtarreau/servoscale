@@ -231,6 +231,11 @@ int main(void)
 				state = BRK;
 				duration = 0;
 			}
+			else if (duration >= 125) {
+				/* ESC times out after 2.5 seconds */
+				state = INI;
+				duration = 0;
+			}
 			break;
 		case BRK :
 		case REV :
