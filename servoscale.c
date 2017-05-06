@@ -1,16 +1,15 @@
 /* Servoscale - 2017-05-06 - Willy Tarreau - public domain.
  *
- * Measures servo pulses received on PB4 (pin3), determines the current
+ * Measures servo pulses received on PB2 (pin7), determines the current
  * state (INI, STP, FWD, REV, BRK), applies a factor and sends the new
  * pulse on PB3 (pin2). Useful to reduce the amplitude of incoming commands
- * for training, without removing ability to brake or to drift a little
- * bit.
- * PB2 can be connected to 3 leds to power the REAR light and the brakes
+ * for training, without removing ability to brake or to drift a little bit.
+ * PB4 (pin3) can be connected to 3 leds to power the REAR light and the brakes
  * like this by setting it to input, outlow, outhigh :
  *                  + VCC                  //
  *                  |                      // or safer for the leds, place
  *         100      V D1 (white) REAR      // two 100 ohms resistors between
- *  PB2 --vvvvv-----+                      // D1 and D2, and connect PB2 in
+ *  PB4 --vvvvv-----+                      // D1 and D2, and connect PB4 in
  *                  |                      // the middle. It will ensure that
  *                  V D2 (red)  BRAKE      // voltage peaks don't destroy the
  *                  T                      // leds.
@@ -83,7 +82,7 @@ uint8_t led = 1;
 int8_t nobst = 0;
 int16_t offset = 0;
 
-/* wait for a positive pulse on PB4 and return its width in microseconds */
+/* wait for a positive pulse on PB2 and return its width in microseconds */
 static inline uint16_t pulse_width(void)
 {
 	uint16_t width = 0;
@@ -91,12 +90,12 @@ static inline uint16_t pulse_width(void)
 	/* 4 phases :  XXXX___---___
 	 *               0  1  2  3
 	 */
-	while (PINB & (1 << PB4));
+	while (PINB & (1 << PB2));
 	/* now low, phase 1 */
-	while (!(PINB & (1 << PB4)));
+	while (!(PINB & (1 << PB2)));
 	/* high, phase 2, measure it.
 	 * Note: this loop was measured to take 5 cycles per loop */
-	while (PINB & (1 << PB4))
+	while (PINB & (1 << PB2))
 		width += 5;
 	/* low again, phase 3 */
 
@@ -130,17 +129,17 @@ int main(void)
 	int16_t len;
 
 	/* PB#  pin  dir  role
-	 * PB3   2   out  (pulse-out)
-	 * PB4   3    in  (pulse-in)
 	 * PB0   5   out  (front light)
 	 * PB1   6   out  (debug)
-	 * PB2   7   i/o  (brake/rear)
+	 * PB2   7    in  (pulse-in)
+	 * PB3   2   out  (pulse-out)
+	 * PB4   3   i/o  (brake/rear)
 	 */
 	DDRB = 1<<DDB3 | 1<<DDB1 | 1<<DDB0;
 
 #ifdef DEBUG_BIT_PASSTHROUGH
 	while (1) {
-		if (PINB & (1 << PB4))
+		if (PINB & (1 << PB2))
 			PORTB |= (1 << PB3) | (1 << PB1);
 		else
 			PORTB &= ~((1 << PB3) | (1 << PB1));
@@ -249,20 +248,20 @@ int main(void)
 		}
 
 		if (state == BRK) {
-			/* PB2 as output to VCC => red leds */
-			DDRB |= 1 << DDB2;
-			PORTB |= 1 << PB2;
+			/* PB4 as output to VCC => red leds */
+			DDRB |= 1 << DDB4;
+			PORTB |= 1 << PB4;
 		}
 		else if (state == REV) {
-			/* PB2 as output to GND => white led */
-			DDRB |= 1 << DDB2;
-			PORTB &= ~(1 << PB2);
+			/* PB4 as output to GND => white led */
+			DDRB |= 1 << DDB4;
+			PORTB &= ~(1 << PB4);
 		}
 		else {
 			/* configure as input, the pull-up is too weak to light
 			 * two red lights in series.
 			 */
-			DDRB &= ~(1<<DDB2);
+			DDRB &= ~(1<<DDB4);
 		}
 
 		// scale pulse width depending on direction. It may also be useful
