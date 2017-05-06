@@ -115,7 +115,10 @@ static inline uint16_t pulse_width(void)
 static inline void send_pulse(uint16_t width)
 {
 	/* each loop takes 4 cycles (measured) */
-	width = width * (F_CPU / 1000000) / 4 + 1;
+	if (F_CPU % 1000000 == 0)
+		width = width * (F_CPU / 1000000) / 4 + 1;
+	else
+		width = (uint32_t)width * (F_CPU / 100000) / 40 + 1;
 
 	PORTB |= 1 << PB3;
 	while (--width) asm volatile("");
