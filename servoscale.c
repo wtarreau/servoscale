@@ -286,6 +286,11 @@ int main(void)
 			}
 			break;
 
+		case BRK:
+			/* ensure braking is not abused to go backwards at full speed */
+			if (duration < 50)
+				break;
+			/* fall through */
 		case REV :
 			len = len * 2 / 3; // backward scaling
 			led = 1; // show we're limited
