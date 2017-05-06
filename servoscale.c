@@ -297,7 +297,6 @@ int main(void)
 			break;
 
 		default:
-			led = 0;
 			if (--nobst < 0)
 				nobst = 0;
 			break;
