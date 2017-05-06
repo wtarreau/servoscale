@@ -295,7 +295,7 @@ int main(void)
 
 			// limit forward speed unless we're exceptionally tolerating a burst
 			if (len < FWDFULL || nobst >= MAXBURST) {
-				len = len * 2 / 5;
+				len = len / 2;
 				led = 1; // show we're limited
 			}
 			break;
