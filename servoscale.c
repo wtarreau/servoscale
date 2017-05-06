@@ -233,6 +233,7 @@ int main(void)
 			}
 			else if (duration >= 125) {
 				/* ESC times out after 2.5 seconds */
+				led = 1; // flash to show the end
 				state = INI;
 				duration = 0;
 			}
