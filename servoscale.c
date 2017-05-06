@@ -32,6 +32,9 @@
 // pulse margin around center, in microseconds
 #define MARGIN 40
 
+// detect moderate speed to disable bursts
+#define FWDHALF  300
+
 // detect full throttle in microseconds
 #define FWDFULL  400
 
@@ -275,8 +278,8 @@ int main(void)
 		switch (state) {
 		case FWD :
 			// support short bursts at full speed, but disable them as soon as
-			// we start.
-			if (++nobst >= MAXBURST)
+			// we start advancing at moderate speed
+			if (len >= FWDHALF && ++nobst >= MAXBURST)
 				nobst = 2 * MAXBURST;
 
 			// limit forward speed unless we're exceptionally tolerating a burst
