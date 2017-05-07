@@ -10,17 +10,9 @@ PORT   := /dev/ttyUSB0
 TOOLS  := $(HOME)/trinket-arduino-1.0.5/hardware/tools
 OPTIM  := -Os
 
-COMMONFLAGS = -g $(OPTIM) -funsigned-char -funsigned-bitfields \
-  -fpack-struct -fshort-enums -Wall -DF_CPU=$(F_CPU) -mmcu=$(MCU)
-
-CFLAGS = -std=gnu99 $(COMMONFLAGS) -Wstrict-prototypes \
-  -Wa,-adhlns=$(<:.c=.lst) \
-
-CXXFLAGS = -std=gnu++11 $(COMMONFLAGS) -fno-exceptions -fno-rtti \
-  -Wa,-adhlns=$(<:.cc=.lst) \
-
-ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs
-LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
+CFLAGS = -std=gnu99 $(OPTIM) -funsigned-char -funsigned-bitfields \
+  -fpack-struct -fshort-enums -Wall -DF_CPU=$(F_CPU) -mmcu=$(MCU) \
+  -Wstrict-prototypes
 
 AVRDUDE := $(TOOLS)/avrdude -C$(TOOLS)/avrdude.conf -c $(PROG) -P $(PORT) -p $(MCU)
 
@@ -30,7 +22,7 @@ OBJCOPY = $(TOOLS)/avr/bin/avr-objcopy
 OBJDUMP = $(TOOLS)/avr/bin/avr-objdump
 SIZE    = $(TOOLS)/avr/bin/avr-size
 
-default: $(TARGET).hex
+all: $(TARGET).hex
 
 check:
 	$(AVRDUDE)
@@ -46,22 +38,10 @@ upload:
 	$(SIZE) $@
 
 %.elf: %.o
-	$(CC) $(CFLAGS) $< --output $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 %.o : %.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-%.o : %.cc
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-%.s : %.c
-	$(CC) -S $(CFLAGS) $< -o $@
-
-%.o : %.S
-	$(CC) -c $(ALL_ASFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	-rm -f *.hex *.lst *.obj *.elf *.o *.map
-
-.SECONDARY : $(TARGET).elf
-.PRECIOUS : $(OBJ)
+	-rm -f *.hex *.elf *.o
